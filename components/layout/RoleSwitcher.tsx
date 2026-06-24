@@ -1,31 +1,41 @@
 'use client';
 
-import { useState } from 'react';
-import { useRole, type Role } from '../../context/RoleContext';
+// ──────────────────────────────────────────────────────────────────────────────
+// WorkFlow HRMS — RoleSwitcher
+//
+// Consumes the Zustand global store directly.
+// Each dropdown option shows the persona name + role label (e.g. "Alex · Employee").
+// Selecting a persona calls setActiveUser(user.id) on the store.
+// ──────────────────────────────────────────────────────────────────────────────
+
+import React, { useState } from 'react';
 import { ChevronDown, User, Users, Shield, Settings } from 'lucide-react';
 import { clsx } from 'clsx';
+import { useGlobalStore, type Role } from '../../store/useGlobalStore';
 
-const ROLES: { value: Role; label: string; icon: React.ElementType; color: string }[] = [
-  { value: 'Employee', label: 'Employee', icon: User, color: 'text-teal-400' },
-  { value: 'Manager', label: 'Manager', icon: Users, color: 'text-blue-400' },
-  { value: 'HR', label: 'HR', icon: Shield, color: 'text-orange-400' },
-  { value: 'Admin', label: 'Admin', icon: Settings, color: 'text-purple-400' },
-];
+// ── Per-role visual config ────────────────────────────────────────────────────
 
-const ROLE_COLORS: Record<Role, { bg: string; text: string; border: string }> = {
-  Employee: { bg: 'bg-teal-500/15', text: 'text-teal-400', border: 'border-teal-500/30' },
-  Manager: { bg: 'bg-blue-500/15', text: 'text-blue-400', border: 'border-blue-500/30' },
-  HR: { bg: 'bg-orange-500/15', text: 'text-orange-400', border: 'border-orange-500/30' },
-  Admin: { bg: 'bg-purple-500/15', text: 'text-purple-400', border: 'border-purple-500/30' },
+const ROLE_META: Record<Role, {
+  icon:   React.ElementType;
+  bg:     string;
+  text:   string;
+  border: string;
+}> = {
+  Employee: { icon: User,     bg: 'bg-teal-500/15',   text: 'text-teal-400',   border: 'border-teal-500/30'   },
+  Manager:  { icon: Users,    bg: 'bg-blue-500/15',   text: 'text-blue-400',   border: 'border-blue-500/30'   },
+  HR:       { icon: Shield,   bg: 'bg-orange-500/15', text: 'text-orange-400', border: 'border-orange-500/30' },
+  Admin:    { icon: Settings, bg: 'bg-purple-500/15', text: 'text-purple-400', border: 'border-purple-500/30' },
 };
 
+// ── Component ─────────────────────────────────────────────────────────────────
+
 export default function RoleSwitcher() {
-  const { role, setRole } = useRole();
+  const { users, activeUserId, setActiveUser } = useGlobalStore();
   const [open, setOpen] = useState(false);
 
-  const current = ROLES.find((r) => r.value === role)!;
-  const colors = ROLE_COLORS[role];
-  const Icon = current.icon;
+  const activeUser = users.find((u) => u.id === activeUserId) ?? users[0];
+  const meta = ROLE_META[activeUser.role];
+  const ActiveIcon = meta.icon;
 
   return (
     <header className="relative z-40 px-4 pt-4 pb-2">
@@ -40,22 +50,21 @@ export default function RoleSwitcher() {
           </span>
         </div>
 
-        {/* Role pill button */}
+        {/* Active persona pill */}
         <button
           id="role-switcher-btn"
           onClick={() => setOpen(!open)}
           className={clsx(
             'flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all duration-200',
-            colors.bg,
-            colors.text,
-            colors.border,
+            meta.bg, meta.text, meta.border,
             'hover:shadow-md active:scale-95'
           )}
         >
-          <Icon size={14} strokeWidth={2} />
-          <span className="text-xs font-semibold">{role}</span>
+          <ActiveIcon size={13} strokeWidth={2} />
+          <span className="text-xs font-semibold">{activeUser.name}</span>
+          <span className="text-[10px] font-medium opacity-60">· {activeUser.role}</span>
           <ChevronDown
-            size={12}
+            size={11}
             strokeWidth={2}
             className={clsx('transition-transform duration-200', open && 'rotate-180')}
           />
@@ -66,56 +75,64 @@ export default function RoleSwitcher() {
       {open && (
         <>
           {/* Backdrop */}
-          <div
-            className="fixed inset-0 z-30"
-            onClick={() => setOpen(false)}
-          />
+          <div className="fixed inset-0 z-30" onClick={() => setOpen(false)} />
 
-          {/* Dropdown — solid opaque background, strong shadow, z-50 */}
-          <div className="absolute top-full right-4 mt-2 z-50 w-52 rounded-2xl border border-border/60 shadow-xl overflow-hidden animate-scale-in" style={{ background: 'var(--background-secondary)' }}>
+          {/* Panel */}
+          <div
+            className="absolute top-full right-4 mt-2 z-50 w-60 rounded-2xl border border-border/60 shadow-xl overflow-hidden animate-scale-in"
+            style={{ background: 'var(--background-secondary)' }}
+          >
             <div className="p-2">
               <p className="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider px-2 py-1.5">
-                Switch Role
+                Switch Persona
               </p>
-              {ROLES.map((r) => {
-                const RoleIcon = r.icon;
-                const isActive = r.value === role;
-                const rColors = ROLE_COLORS[r.value];
+
+              {users.map((user, idx) => {
+                const m      = ROLE_META[user.role];
+                const Icon   = m.icon;
+                const active = user.id === activeUserId;
+
                 return (
                   <button
-                    key={r.value}
-                    id={`role-option-${r.value.toLowerCase()}`}
-                    onClick={() => {
-                      setRole(r.value);
-                      setOpen(false);
-                    }}
+                    key={user.id}
+                    id={`role-option-${user.role.toLowerCase()}`}
+                    onClick={() => { setActiveUser(user.id); setOpen(false); }}
                     className={clsx(
                       'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 text-left',
-                      isActive
-                        ? `${rColors.bg} ${rColors.text}`
+                      active
+                        ? `${m.bg} ${m.text}`
                         : 'hover:bg-background-tertiary text-foreground-muted hover:text-foreground'
                     )}
                   >
+                    {/* Avatar */}
                     <span
                       className={clsx(
-                        'w-7 h-7 rounded-lg flex items-center justify-center',
-                        isActive ? rColors.bg : 'bg-muted/50'
+                        'w-8 h-8 rounded-xl flex items-center justify-center font-black text-[11px] flex-shrink-0',
+                        active ? m.bg : 'bg-muted/50'
                       )}
                     >
-                      <RoleIcon size={14} strokeWidth={2} />
+                      {user.avatar}
                     </span>
-                    <span className="text-sm font-medium">{r.label}</span>
-                    {isActive && (
-                      <span className="ml-auto w-1.5 h-1.5 rounded-full bg-current" />
+
+                    {/* Name + role */}
+                    <span className="flex flex-col min-w-0">
+                      <span className="text-sm font-semibold leading-tight">{user.name}</span>
+                      <span className="text-[10px] opacity-60 leading-tight">{user.role} · {user.designation}</span>
+                    </span>
+
+                    {/* Active dot */}
+                    {active && (
+                      <span className="ml-auto w-1.5 h-1.5 rounded-full bg-current flex-shrink-0" />
                     )}
                   </button>
                 );
               })}
             </div>
-            {/* Bottom hint */}
+
+            {/* Footer hint */}
             <div className="px-4 py-2 border-t border-border/40" style={{ background: 'var(--background-tertiary)' }}>
               <p className="text-[10px] text-foreground-muted">
-                Demo mode — switch to explore different views
+                Demo mode — switch persona to explore role-specific views
               </p>
             </div>
           </div>

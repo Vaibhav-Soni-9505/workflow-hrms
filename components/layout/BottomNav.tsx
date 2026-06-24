@@ -7,7 +7,6 @@ import {
   Clock,
   TrendingUp,
   BookOpen,
-  Zap,
   Users,
   Calendar,
   BarChart2,
@@ -27,9 +26,9 @@ const NAV_CONFIG: Record<Role, NavItem[]> = {
   Employee: [
     { label: 'Home', href: '/home', icon: Home },
     { label: 'Attendance', href: '/attendance', icon: Clock },
+    { label: 'Leave', href: '/leave', icon: Calendar },
     { label: 'Performance', href: '/performance', icon: TrendingUp },
     { label: 'Training', href: '/training', icon: BookOpen },
-    { label: 'Contributions', href: '/contributions', icon: Zap },
   ],
   Manager: [
     { label: 'Home', href: '/home', icon: Home },
@@ -41,8 +40,8 @@ const NAV_CONFIG: Record<Role, NavItem[]> = {
   HR: [
     { label: 'Home', href: '/home', icon: Home },
     { label: 'Recruitment', href: '/recruitment', icon: UserCheck },
+    { label: 'Leave', href: '/leave', icon: Calendar },
     { label: 'Analytics', href: '/analytics', icon: BarChart2 },
-    { label: 'Training', href: '/training', icon: BookOpen },
     { label: 'Announcements', href: '/announcements', icon: Megaphone },
   ],
   Admin: [

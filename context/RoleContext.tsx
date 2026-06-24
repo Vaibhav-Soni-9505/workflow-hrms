@@ -1,31 +1,37 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+// ──────────────────────────────────────────────────────────────────────────────
+// WorkFlow HRMS — RoleContext
+//
+// Thin adapter over the Zustand global store.
+// All existing consumers of `useRole()` continue to work with ZERO changes —
+// they still get `role` (string) and `setRole(role)`.
+// Internally this maps to the active user's persona in the store.
+// ──────────────────────────────────────────────────────────────────────────────
 
-export type Role = 'Employee' | 'Manager' | 'HR' | 'Admin';
+import React, { createContext, useContext, ReactNode } from 'react';
+import { useGlobalStore, type Role } from '../store/useGlobalStore';
+
+export type { Role };
 
 interface RoleContextType {
-  role: Role;
+  role:    Role;
   setRole: (role: Role) => void;
 }
 
 const RoleContext = createContext<RoleContextType | undefined>(undefined);
 
-const ROLE_STORAGE_KEY = 'workflow_hrms_role';
-
 export function RoleProvider({ children }: { children: ReactNode }) {
-  const [role, setRoleState] = useState<Role>('Employee');
+  const { users, activeUserId, setActiveUser } = useGlobalStore();
 
-  useEffect(() => {
-    const stored = localStorage.getItem(ROLE_STORAGE_KEY) as Role | null;
-    if (stored && ['Employee', 'Manager', 'HR', 'Admin'].includes(stored)) {
-      setRoleState(stored);
-    }
-  }, []);
+  // Derive the current role from the active user
+  const activeUser = users.find((u) => u.id === activeUserId) ?? users[0];
+  const role: Role = activeUser.role;
 
+  // Switching role → switch to the first user that has that role
   const setRole = (newRole: Role) => {
-    setRoleState(newRole);
-    localStorage.setItem(ROLE_STORAGE_KEY, newRole);
+    const target = users.find((u) => u.role === newRole);
+    if (target) setActiveUser(target.id);
   };
 
   return (
