@@ -71,8 +71,8 @@ export default function RoleSwitcher() {
             onClick={() => setOpen(false)}
           />
 
-          {/* Dropdown */}
-          <div className="absolute top-full right-4 mt-2 z-40 w-52 rounded-2xl border border-border/60 bg-background-secondary shadow-lg overflow-hidden animate-scale-in">
+          {/* Dropdown — solid opaque background, strong shadow, z-50 */}
+          <div className="absolute top-full right-4 mt-2 z-50 w-52 rounded-2xl border border-border/60 shadow-xl overflow-hidden animate-scale-in" style={{ background: 'var(--background-secondary)' }}>
             <div className="p-2">
               <p className="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider px-2 py-1.5">
                 Switch Role
@@ -93,7 +93,7 @@ export default function RoleSwitcher() {
                       'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 text-left',
                       isActive
                         ? `${rColors.bg} ${rColors.text}`
-                        : 'hover:bg-muted/50 text-foreground-muted hover:text-foreground'
+                        : 'hover:bg-background-tertiary text-foreground-muted hover:text-foreground'
                     )}
                   >
                     <span
@@ -113,7 +113,7 @@ export default function RoleSwitcher() {
               })}
             </div>
             {/* Bottom hint */}
-            <div className="px-4 py-2 border-t border-border/40 bg-muted/30">
+            <div className="px-4 py-2 border-t border-border/40" style={{ background: 'var(--background-tertiary)' }}>
               <p className="text-[10px] text-foreground-muted">
                 Demo mode — switch to explore different views
               </p>
