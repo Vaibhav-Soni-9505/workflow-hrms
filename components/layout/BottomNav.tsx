@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   Home,
   Clock,
@@ -12,9 +12,9 @@ import {
   BarChart2,
   Megaphone,
   UserCheck,
-} from 'lucide-react';
-import { useRole, type Role } from '../../context/RoleContext';
-import { clsx } from 'clsx';
+} from "lucide-react";
+import { useRole, type Role } from "../../context/RoleContext";
+import { clsx } from "clsx";
 
 interface NavItem {
   label: string;
@@ -24,32 +24,32 @@ interface NavItem {
 
 const NAV_CONFIG: Record<Role, NavItem[]> = {
   Employee: [
-    { label: 'Home', href: '/home', icon: Home },
-    { label: 'Attendance', href: '/attendance', icon: Clock },
-    { label: 'Leave', href: '/leave', icon: Calendar },
-    { label: 'Performance', href: '/performance', icon: TrendingUp },
-    { label: 'Training', href: '/training', icon: BookOpen },
+    { label: "Home", href: "/home", icon: Home },
+    { label: "Attendance", href: "/attendance", icon: Clock },
+    { label: "Leave", href: "/leave", icon: Calendar },
+    { label: "Performance", href: "/performance", icon: TrendingUp },
+    { label: "Training", href: "/training", icon: BookOpen },
   ],
   Manager: [
-    { label: 'Home', href: '/home', icon: Home },
-    { label: 'Team', href: '/team', icon: Users },
-    { label: 'Leave', href: '/leave', icon: Calendar },
-    { label: 'Performance', href: '/performance', icon: TrendingUp },
-    { label: 'Training', href: '/training', icon: BookOpen },
+    { label: "Home", href: "/home", icon: Home },
+    { label: "Team", href: "/team", icon: Users },
+    { label: "Leave", href: "/leave", icon: Calendar },
+    { label: "Performance", href: "/performance", icon: TrendingUp },
+    { label: "Training", href: "/training", icon: BookOpen },
   ],
   HR: [
-    { label: 'Home', href: '/home', icon: Home },
-    { label: 'Recruitment', href: '/recruitment', icon: UserCheck },
-    { label: 'Leave', href: '/leave', icon: Calendar },
-    { label: 'Analytics', href: '/analytics', icon: BarChart2 },
-    { label: 'Announcements', href: '/announcements', icon: Megaphone },
+    { label: "Home", href: "/home", icon: Home },
+    { label: "Recruitment", href: "/recruitment", icon: UserCheck },
+    { label: "Leave", href: "/leave", icon: Calendar },
+    { label: "Analytics", href: "/analytics", icon: BarChart2 },
+    { label: "Announcements", href: "/announcements", icon: Megaphone },
   ],
   Admin: [
-    { label: 'Home', href: '/home', icon: Home },
-    { label: 'Analytics', href: '/analytics', icon: BarChart2 },
-    { label: 'Team', href: '/team', icon: Users },
-    { label: 'Training', href: '/training', icon: BookOpen },
-    { label: 'Announcements', href: '/announcements', icon: Megaphone },
+    { label: "Home", href: "/home", icon: Home },
+    { label: "Analytics", href: "/analytics", icon: BarChart2 },
+    { label: "Team", href: "/team", icon: Users },
+    { label: "Training", href: "/training", icon: BookOpen },
+    { label: "Announcements", href: "/announcements", icon: Megaphone },
   ],
 };
 
@@ -68,7 +68,7 @@ export default function BottomNav() {
           const Icon = item.icon;
           const isActive =
             pathname === item.href ||
-            (item.href !== '/home' && pathname.startsWith(item.href));
+            (item.href !== "/home" && pathname.startsWith(item.href));
 
           return (
             <Link
@@ -85,10 +85,10 @@ export default function BottomNav() {
               {/* Icon container */}
               <span
                 className={clsx(
-                  'relative flex items-center justify-center w-10 h-8 rounded-xl transition-all duration-200',
+                  "relative flex items-center justify-center w-10 h-8 rounded-xl transition-all duration-200",
                   isActive
-                    ? 'bg-primary/15 text-primary'
-                    : 'text-foreground-muted group-hover:text-foreground group-hover:bg-muted/50'
+                    ? "bg-primary/15 text-primary"
+                    : "text-foreground-muted group-hover:text-foreground group-hover:bg-muted/50",
                 )}
               >
                 <Icon
@@ -106,8 +106,10 @@ export default function BottomNav() {
               {/* Label */}
               <span
                 className={clsx(
-                  'text-[10px] font-medium transition-colors duration-200 leading-none',
-                  isActive ? 'text-primary' : 'text-foreground-muted group-hover:text-foreground'
+                  "text-[10px] font-medium transition-colors duration-200 leading-none",
+                  isActive
+                    ? "text-primary"
+                    : "text-foreground-muted group-hover:text-foreground",
                 )}
               >
                 {item.label}

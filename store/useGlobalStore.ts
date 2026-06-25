@@ -43,6 +43,24 @@ export interface LeaveRequest {
   approvedBy?: string; // name of approver (set when status → Approved)
 }
 
+export type AttendanceStatus =
+  | "Present"
+  | "Absent"
+  | "Late"
+  | "Half-day"
+  | "On-leave";
+
+export interface AttendanceRecord {
+  id: string;
+  userId: string;
+  date: string;
+  status: AttendanceStatus;
+  totalHours: number;
+  productiveHours: number;
+  breakHours: number;
+  overtimeHours: number;
+}
+
 export interface PayrollRecord {
   id: string;
   userId: string;
@@ -60,6 +78,176 @@ export interface TaxDocument {
   type: string;
   year: number;
   url: string;
+}
+
+export type DocumentCategory =
+  | "identity"
+  | "employment"
+  | "work-auth"
+  | "tax"
+  | "education"
+  | "other";
+
+export type DocumentStatus = "missing" | "uploaded" | "verified" | "rejected";
+
+export interface UserDocument {
+  id: string;
+  userId: string;
+  category: DocumentCategory;
+  status: DocumentStatus;
+  fileName: string;
+  fileType: string;
+  fileSize: string;
+  expiryDate?: string;
+  verificationDate?: string;
+  rejectionReason?: string;
+  uploadedAt: string;
+}
+
+export type ReimbursementCategory =
+  | "travel"
+  | "food"
+  | "accommodation"
+  | "communication"
+  | "medical"
+  | "office-supplies"
+  | "other";
+
+export type ReimbursementStatus =
+  | "draft"
+  | "submitted"
+  | "pending-approval"
+  | "approved"
+  | "rejected"
+  | "paid";
+
+export interface Mileage {
+  distance: number;
+  rate: number;
+}
+
+export interface Reimbursement {
+  id: string;
+  userId: string;
+  category: ReimbursementCategory;
+  amount: number;
+  currency: string;
+  date: string;
+  description: string;
+  receiptUrl?: string;
+  isTaxable: boolean;
+  mileage?: Mileage;
+  status: ReimbursementStatus;
+  managerComment?: string;
+}
+
+export interface KeyResult {
+  id: string;
+  title: string;
+  target: number;
+  current: number;
+  completed: boolean;
+}
+
+export type GoalCategory = "individual" | "team" | "organizational";
+export type GoalType = "quarterly" | "annual";
+export type GoalStatus =
+  | "not-started"
+  | "in-progress"
+  | "on-track"
+  | "at-risk"
+  | "completed";
+
+export interface Goal {
+  id: string;
+  userId: string;
+  title: string;
+  description: string;
+  category: GoalCategory;
+  type: GoalType;
+  weight: number;
+  dueDate: string;
+  status: GoalStatus;
+  progress: number;
+  keyResults: KeyResult[];
+}
+
+export type ReviewType = "quarterly" | "annual";
+
+export interface PerformanceReview {
+  id: string;
+  userId: string;
+  reviewerId: string;
+  type: ReviewType;
+  overallRating: number;
+  strengths: string[];
+  improvements: string[];
+  recommendations: string;
+  date: string;
+}
+
+export interface TrainingContent {
+  id: string;
+  title: string;
+  type: "video" | "document" | "quiz" | "interactive";
+  duration: string;
+  isCompleted: boolean;
+}
+
+export interface TrainingModule {
+  id: string;
+  userId: string;
+  title: string;
+  description: string;
+  category:
+    | "orientation"
+    | "technical"
+    | "compliance"
+    | "soft-skills"
+    | "product";
+  totalDuration: string;
+  dueDate: string;
+  isMandatory: boolean;
+  certificateEligible: boolean;
+  status: "not-started" | "in-progress" | "completed";
+  progress: number;
+  content: TrainingContent[];
+}
+
+export interface JobPosting {
+  id: string;
+  title: string;
+  department: string;
+  location: string;
+  employmentType: "Full-time" | "Part-time" | "Contract";
+  experience: string;
+  salaryRange: string;
+  requirements: string[];
+  responsibilities: string[];
+  status: "active" | "closed";
+}
+
+export interface Candidate {
+  id: string;
+  jobId: string;
+  name: string;
+  email: string;
+  status:
+    | "new"
+    | "screening"
+    | "shortlisted"
+    | "interview-scheduled"
+    | "interviewed"
+    | "offer-extended"
+    | "hired"
+    | "rejected";
+  skills: string[];
+  experience: string;
+  expectedSalary: string;
+  noticePeriod: string;
+  rating: number;
+  notes: string;
+  interviewDate?: string;
 }
 
 // ── Seed Data ─────────────────────────────────────────────────────────────────
@@ -280,6 +468,209 @@ const SEED_LEAVE_REQUESTS: LeaveRequest[] = [
   },
 ];
 
+const SEED_ATTENDANCE_RECORDS: AttendanceRecord[] = [
+  {
+    id: "att-1-20260622",
+    userId: "1",
+    date: "2026-06-22",
+    status: "Present",
+    totalHours: 8.9,
+    productiveHours: 7.4,
+    breakHours: 0.9,
+    overtimeHours: 0.6,
+  },
+  {
+    id: "att-1-20260623",
+    userId: "1",
+    date: "2026-06-23",
+    status: "Late",
+    totalHours: 7.8,
+    productiveHours: 6.5,
+    breakHours: 0.8,
+    overtimeHours: 0,
+  },
+  {
+    id: "att-1-20260624",
+    userId: "1",
+    date: "2026-06-24",
+    status: "Half-day",
+    totalHours: 4.2,
+    productiveHours: 3.4,
+    breakHours: 0.4,
+    overtimeHours: 0,
+  },
+  {
+    id: "att-1-20260625",
+    userId: "1",
+    date: "2026-06-25",
+    status: "On-leave",
+    totalHours: 0,
+    productiveHours: 0,
+    breakHours: 0,
+    overtimeHours: 0,
+  },
+  {
+    id: "att-1-20260626",
+    userId: "1",
+    date: "2026-06-26",
+    status: "Present",
+    totalHours: 8.4,
+    productiveHours: 7,
+    breakHours: 0.9,
+    overtimeHours: 0.5,
+  },
+  {
+    id: "att-2-20260622",
+    userId: "2",
+    date: "2026-06-22",
+    status: "Present",
+    totalHours: 9.1,
+    productiveHours: 7.6,
+    breakHours: 0.9,
+    overtimeHours: 0.6,
+  },
+  {
+    id: "att-2-20260623",
+    userId: "2",
+    date: "2026-06-23",
+    status: "Present",
+    totalHours: 8.7,
+    productiveHours: 7.1,
+    breakHours: 0.8,
+    overtimeHours: 0.8,
+  },
+  {
+    id: "att-2-20260624",
+    userId: "2",
+    date: "2026-06-24",
+    status: "Late",
+    totalHours: 7.5,
+    productiveHours: 6.2,
+    breakHours: 0.8,
+    overtimeHours: 0,
+  },
+  {
+    id: "att-2-20260625",
+    userId: "2",
+    date: "2026-06-25",
+    status: "Present",
+    totalHours: 8.8,
+    productiveHours: 7.2,
+    breakHours: 0.9,
+    overtimeHours: 0.7,
+  },
+  {
+    id: "att-2-20260626",
+    userId: "2",
+    date: "2026-06-26",
+    status: "Present",
+    totalHours: 8.6,
+    productiveHours: 7.1,
+    breakHours: 0.9,
+    overtimeHours: 0.6,
+  },
+  {
+    id: "att-3-20260622",
+    userId: "3",
+    date: "2026-06-22",
+    status: "Present",
+    totalHours: 8.5,
+    productiveHours: 7.1,
+    breakHours: 0.8,
+    overtimeHours: 0.6,
+  },
+  {
+    id: "att-3-20260623",
+    userId: "3",
+    date: "2026-06-23",
+    status: "Late",
+    totalHours: 7.2,
+    productiveHours: 5.9,
+    breakHours: 0.7,
+    overtimeHours: 0,
+  },
+  {
+    id: "att-3-20260624",
+    userId: "3",
+    date: "2026-06-24",
+    status: "Present",
+    totalHours: 8.9,
+    productiveHours: 7.4,
+    breakHours: 0.9,
+    overtimeHours: 0.6,
+  },
+  {
+    id: "att-3-20260625",
+    userId: "3",
+    date: "2026-06-25",
+    status: "On-leave",
+    totalHours: 0,
+    productiveHours: 0,
+    breakHours: 0,
+    overtimeHours: 0,
+  },
+  {
+    id: "att-3-20260626",
+    userId: "3",
+    date: "2026-06-26",
+    status: "Present",
+    totalHours: 8.1,
+    productiveHours: 6.8,
+    breakHours: 0.8,
+    overtimeHours: 0.5,
+  },
+  {
+    id: "att-4-20260622",
+    userId: "4",
+    date: "2026-06-22",
+    status: "Present",
+    totalHours: 8.2,
+    productiveHours: 6.9,
+    breakHours: 0.7,
+    overtimeHours: 0.6,
+  },
+  {
+    id: "att-4-20260623",
+    userId: "4",
+    date: "2026-06-23",
+    status: "Present",
+    totalHours: 8.4,
+    productiveHours: 7,
+    breakHours: 0.8,
+    overtimeHours: 0.6,
+  },
+  {
+    id: "att-4-20260624",
+    userId: "4",
+    date: "2026-06-24",
+    status: "Present",
+    totalHours: 8.6,
+    productiveHours: 7.2,
+    breakHours: 0.8,
+    overtimeHours: 0.6,
+  },
+  {
+    id: "att-4-20260625",
+    userId: "4",
+    date: "2026-06-25",
+    status: "Half-day",
+    totalHours: 4,
+    productiveHours: 3.2,
+    breakHours: 0.4,
+    overtimeHours: 0,
+  },
+  {
+    id: "att-4-20260626",
+    userId: "4",
+    date: "2026-06-26",
+    status: "Present",
+    totalHours: 8.3,
+    productiveHours: 6.9,
+    breakHours: 0.8,
+    overtimeHours: 0.6,
+  },
+];
+
 // ── Store Shape ───────────────────────────────────────────────────────────────
 
 // ── Seed Payroll & Tax Documents ───────────────────────────────────────────
@@ -314,16 +705,367 @@ const SEED_TAX_DOCUMENTS: TaxDocument[] = [
   },
 ];
 
+const SEED_USER_DOCUMENTS: UserDocument[] = [
+  {
+    id: "doc-001",
+    userId: "1",
+    category: "identity",
+    status: "verified",
+    fileName: "Aadhaar_Card.pdf",
+    fileType: "PDF",
+    fileSize: "2.4 MB",
+    uploadedAt: "2026-01-15",
+    verificationDate: "2026-01-18",
+  },
+  {
+    id: "doc-002",
+    userId: "1",
+    category: "work-auth",
+    status: "uploaded",
+    fileName: "Work_Authorization_2026.pdf",
+    fileType: "PDF",
+    fileSize: "1.8 MB",
+    uploadedAt: "2026-05-20",
+    expiryDate: "2026-12-31",
+  },
+  {
+    id: "doc-003",
+    userId: "1",
+    category: "education",
+    status: "rejected",
+    fileName: "Bachelor_Degree_Scan.jpg",
+    fileType: "JPEG",
+    fileSize: "5.2 MB",
+    uploadedAt: "2026-03-10",
+    rejectionReason: "Scanned image is too blurry.",
+  },
+];
+
+const SEED_REIMBURSEMENTS: Reimbursement[] = [
+  {
+    id: "exp-001",
+    userId: "1",
+    category: "food",
+    amount: 45.0,
+    currency: "USD",
+    date: "2026-06-15",
+    description: "Lunch with client",
+    isTaxable: true,
+    status: "paid",
+  },
+  {
+    id: "exp-002",
+    userId: "1",
+    category: "travel",
+    amount: 150.0,
+    currency: "USD",
+    date: "2026-06-20",
+    description: "Round trip to office from client site",
+    isTaxable: false,
+    mileage: { distance: 100, rate: 1.5 },
+    status: "pending-approval",
+  },
+];
+
+const SEED_GOALS: Goal[] = [
+  {
+    id: "goal-001",
+    userId: "1",
+    title: "Launch new UI",
+    description: "Redesign and launch the new dashboard UI",
+    category: "individual",
+    type: "quarterly",
+    weight: 40,
+    dueDate: "2026-09-30",
+    status: "in-progress",
+    progress: 50,
+    keyResults: [
+      {
+        id: "kr-001",
+        title: "Complete design mockups",
+        target: 100,
+        current: 100,
+        completed: true,
+      },
+      {
+        id: "kr-002",
+        title: "Implement responsive layout",
+        target: 100,
+        current: 0,
+        completed: false,
+      },
+    ],
+  },
+  {
+    id: "goal-002",
+    userId: "1",
+    title: "Reduce load time",
+    description: "Optimize initial page load to under 2 seconds",
+    category: "individual",
+    type: "quarterly",
+    weight: 30,
+    dueDate: "2026-09-30",
+    status: "at-risk",
+    progress: 20,
+    keyResults: [
+      {
+        id: "kr-003",
+        title: "Reduce image sizes",
+        target: 100,
+        current: 20,
+        completed: false,
+      },
+    ],
+  },
+];
+
+const SEED_PERFORMANCE_REVIEWS: PerformanceReview[] = [
+  {
+    id: "review-001",
+    userId: "1",
+    reviewerId: "2",
+    type: "quarterly",
+    overallRating: 4.5,
+    strengths: ["Teamwork", "Problem Solving"],
+    improvements: ["Documentation"],
+    recommendations: "Continue mentoring junior team members",
+    date: "2026-04-15",
+  },
+];
+
+const SEED_TRAINING_MODULES: TrainingModule[] = [
+  {
+    id: "training-001",
+    userId: "1",
+    title: "Information Security 101",
+    description: "Learn about basic security practices for the workplace",
+    category: "compliance",
+    totalDuration: "30 mins",
+    dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split("T")[0],
+    isMandatory: true,
+    certificateEligible: true,
+    status: "in-progress",
+    progress: 50,
+    content: [
+      {
+        id: "content-001",
+        title: "Security Fundamentals",
+        type: "video",
+        duration: "15 mins",
+        isCompleted: true,
+      },
+      {
+        id: "content-002",
+        title: "Security Quiz",
+        type: "quiz",
+        duration: "15 mins",
+        isCompleted: false,
+      },
+    ],
+  },
+  {
+    id: "training-002",
+    userId: "1",
+    title: "Advanced React Patterns",
+    description: "Master advanced React patterns and techniques",
+    category: "technical",
+    totalDuration: "2 hours",
+    dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split("T")[0],
+    isMandatory: false,
+    certificateEligible: true,
+    status: "not-started",
+    progress: 0,
+    content: [
+      {
+        id: "content-003",
+        title: "Compound Components",
+        type: "video",
+        duration: "45 mins",
+        isCompleted: false,
+      },
+      {
+        id: "content-004",
+        title: "Render Props & Hooks",
+        type: "interactive",
+        duration: "1h 15 mins",
+        isCompleted: false,
+      },
+    ],
+  },
+  {
+    id: "training-003",
+    userId: "2",
+    title: "Leadership Fundamentals",
+    description: "Essential skills for new team leaders",
+    category: "soft-skills",
+    totalDuration: "1 hour",
+    dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split("T")[0],
+    isMandatory: true,
+    certificateEligible: true,
+    status: "in-progress",
+    progress: 75,
+    content: [
+      {
+        id: "content-005",
+        title: "Team Communication",
+        type: "video",
+        duration: "30 mins",
+        isCompleted: true,
+      },
+      {
+        id: "content-006",
+        title: "1:1 Meeting Guide",
+        type: "document",
+        duration: "30 mins",
+        isCompleted: false,
+      },
+    ],
+  },
+  {
+    id: "training-004",
+    userId: "3",
+    title: "HR Compliance Training",
+    description: "Latest updates to labor laws and company policies",
+    category: "compliance",
+    totalDuration: "45 mins",
+    dueDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split("T")[0],
+    isMandatory: true,
+    certificateEligible: true,
+    status: "completed",
+    progress: 100,
+    content: [
+      {
+        id: "content-007",
+        title: "2026 Policy Changes",
+        type: "document",
+        duration: "30 mins",
+        isCompleted: true,
+      },
+      {
+        id: "content-008",
+        title: "Compliance Quiz",
+        type: "quiz",
+        duration: "15 mins",
+        isCompleted: true,
+      },
+    ],
+  },
+];
+
+const SEED_JOB_POSTINGS: JobPosting[] = [
+  {
+    id: "job-001",
+    title: "Senior Frontend Developer",
+    department: "Engineering",
+    location: "Remote (US)",
+    employmentType: "Full-time",
+    experience: "5+ years",
+    salaryRange: "$120k - $160k",
+    requirements: [
+      "Proficiency in React and TypeScript",
+      "Experience with Tailwind CSS",
+      "Knowledge of modern frontend testing frameworks",
+    ],
+    responsibilities: [
+      "Lead frontend development efforts",
+      "Mentor junior developers",
+      "Architect scalable frontend solutions",
+    ],
+    status: "active",
+  },
+  {
+    id: "job-002",
+    title: "Product Designer",
+    department: "Design",
+    location: "San Francisco, CA",
+    employmentType: "Full-time",
+    experience: "3+ years",
+    salaryRange: "$90k - $120k",
+    requirements: [
+      "Strong portfolio of design work",
+      "Proficiency in Figma",
+      "Experience with user research",
+    ],
+    responsibilities: [
+      "Design user interfaces for our products",
+      "Collaborate with product and engineering teams",
+      "Conduct usability testing",
+    ],
+    status: "active",
+  },
+];
+
+const SEED_CANDIDATES: Candidate[] = [
+  {
+    id: "cand-001",
+    jobId: "job-001",
+    name: "Sam Wilson",
+    email: "sam.wilson@email.com",
+    status: "shortlisted",
+    skills: ["React", "TypeScript", "Tailwind"],
+    experience: "6 years",
+    expectedSalary: "$140k",
+    noticePeriod: "2 weeks",
+    rating: 4,
+    notes: "Great technical interview, strong communication",
+  },
+  {
+    id: "cand-002",
+    jobId: "job-001",
+    name: "Diana Prince",
+    email: "diana.prince@email.com",
+    status: "interview-scheduled",
+    skills: ["React", "Next.js", "GraphQL"],
+    experience: "7 years",
+    expectedSalary: "$155k",
+    noticePeriod: "1 month",
+    rating: 5,
+    notes: "Excellent portfolio, strong leadership potential",
+    interviewDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split("T")[0],
+  },
+  {
+    id: "cand-003",
+    jobId: "job-002",
+    name: "Bruce Wayne",
+    email: "bruce.wayne@email.com",
+    status: "new",
+    skills: ["Figma", "UI/UX", "User Research"],
+    experience: "4 years",
+    expectedSalary: "$100k",
+    noticePeriod: "3 weeks",
+    rating: 4,
+    notes: "Great visual design skills",
+  },
+];
+
 // ── Store Shape ───────────────────────────────────────────────────────────────
 
 interface GlobalState {
   // ── Data ──────────────────────────────────────────────────────────────────
   users: User[];
   activeUserId: string;
+  attendance: AttendanceRecord[];
   leaveRequests: LeaveRequest[];
   leaveBalances: LeaveBalance[];
   payrollRecords: PayrollRecord[];
   taxDocuments: TaxDocument[];
+  documents: UserDocument[];
+  reimbursements: Reimbursement[];
+  goals: Goal[];
+  performanceReviews: PerformanceReview[];
+  trainingModules: TrainingModule[];
+  jobPostings: JobPosting[];
+  candidates: Candidate[];
 
   // ── Derived ───────────────────────────────────────────────────────────────
   getActiveUser: () => User;
@@ -361,6 +1103,39 @@ interface GlobalState {
     status: LeaveStatus,
     approverName?: string,
   ) => void;
+
+  /**
+   * Submit a new expense/reimbursement for the currently active user.
+   */
+  submitExpense: (
+    partial: Omit<Reimbursement, "id" | "userId" | "status">,
+  ) => void;
+
+  /**
+   * Update the status of an expense (approve/reject) with optional comment.
+   */
+  updateExpenseStatus: (
+    expenseId: string,
+    newStatus: ReimbursementStatus,
+    comment?: string,
+  ) => void;
+
+  /**
+   * Update a goal's progress and status.
+   */
+  updateGoalProgress: (
+    goalId: string,
+    newProgress: number,
+    newStatus: GoalStatus,
+  ) => void;
+
+  markTrainingContentCompleted: (moduleId: string, contentId: string) => void;
+
+  updateCandidateStatus: (
+    candidateId: string,
+    newStatus: Candidate["status"],
+  ) => void;
+  scheduleInterview: (candidateId: string, date: string) => void;
 }
 
 // ── Store ─────────────────────────────────────────────────────────────────────
@@ -369,10 +1144,18 @@ export const useGlobalStore = create<GlobalState>()((set, get) => ({
   // ── Initial State ──────────────────────────────────────────────────────────
   users: SEED_USERS,
   activeUserId: "1",
+  attendance: SEED_ATTENDANCE_RECORDS,
   leaveRequests: SEED_LEAVE_REQUESTS,
   leaveBalances: SEED_LEAVE_BALANCES,
   payrollRecords: SEED_PAYROLL_RECORDS,
   taxDocuments: SEED_TAX_DOCUMENTS,
+  documents: SEED_USER_DOCUMENTS,
+  reimbursements: SEED_REIMBURSEMENTS,
+  goals: SEED_GOALS,
+  performanceReviews: SEED_PERFORMANCE_REVIEWS,
+  trainingModules: SEED_TRAINING_MODULES,
+  jobPostings: SEED_JOB_POSTINGS,
+  candidates: SEED_CANDIDATES,
 
   // ── Derived ───────────────────────────────────────────────────────────────
   getActiveUser: () => {
@@ -456,6 +1239,166 @@ export const useGlobalStore = create<GlobalState>()((set, get) => ({
       });
 
       return { leaveRequests: updatedRequests, leaveBalances: updatedBalances };
+    });
+  },
+
+  uploadDocument: (
+    partial: Omit<UserDocument, "id" | "userId" | "uploadedAt" | "status">,
+  ) => {
+    const { activeUserId } = get();
+    const newDocument: UserDocument = {
+      ...partial,
+      id: `doc-${Date.now()}`,
+      userId: activeUserId,
+      status: "uploaded",
+      uploadedAt: new Date().toISOString().split("T")[0],
+    };
+
+    set((state) => ({
+      documents: [newDocument, ...state.documents],
+    }));
+  },
+
+  updateDocumentStatus: (
+    docId: string,
+    newStatus: DocumentStatus,
+    additionalData?: { rejectionReason?: string },
+  ) => {
+    set((state) => {
+      const updatedDocuments = state.documents.map((doc) => {
+        if (doc.id !== docId) return doc;
+
+        const updatedDoc: UserDocument = {
+          ...doc,
+          status: newStatus,
+        };
+
+        if (newStatus === "verified") {
+          updatedDoc.verificationDate = new Date().toISOString().split("T")[0];
+        }
+
+        if (newStatus === "rejected" && additionalData?.rejectionReason) {
+          updatedDoc.rejectionReason = additionalData.rejectionReason;
+        }
+
+        return updatedDoc;
+      });
+
+      return { documents: updatedDocuments };
+    });
+  },
+
+  submitExpense: (partial) => {
+    const { activeUserId } = get();
+    const newExpense: Reimbursement = {
+      ...partial,
+      id: `exp-${Date.now()}`,
+      userId: activeUserId,
+      status: "pending-approval",
+    };
+
+    set((state) => ({
+      reimbursements: [newExpense, ...state.reimbursements],
+    }));
+  },
+
+  updateExpenseStatus: (expenseId, newStatus, comment) => {
+    set((state) => {
+      const updatedReimbursements = state.reimbursements.map((exp) => {
+        if (exp.id !== expenseId) return exp;
+
+        const updatedExp: Reimbursement = {
+          ...exp,
+          status: newStatus,
+        };
+
+        if (comment) {
+          updatedExp.managerComment = comment;
+        }
+
+        return updatedExp;
+      });
+
+      return { reimbursements: updatedReimbursements };
+    });
+  },
+
+  updateGoalProgress: (goalId, newProgress, newStatus) => {
+    set((state) => {
+      const updatedGoals = state.goals.map((goal) => {
+        if (goal.id !== goalId) return goal;
+
+        return {
+          ...goal,
+          progress: newProgress,
+          status: newStatus,
+        };
+      });
+
+      return { goals: updatedGoals };
+    });
+  },
+
+  markTrainingContentCompleted: (moduleId, contentId) => {
+    set((state) => {
+      const updatedTrainingModules = state.trainingModules.map((module) => {
+        if (module.id !== moduleId) return module;
+
+        // Mark the specific content item as completed
+        const updatedContent = module.content.map((content) =>
+          content.id === contentId
+            ? { ...content, isCompleted: true }
+            : content,
+        );
+
+        // Calculate new progress percentage
+        const completedCount = updatedContent.filter(
+          (c) => c.isCompleted,
+        ).length;
+        const totalCount = updatedContent.length;
+        const newProgress = Math.round((completedCount / totalCount) * 100);
+
+        // Determine new status
+        let newStatus: "not-started" | "in-progress" | "completed";
+        if (newProgress === 100) {
+          newStatus = "completed";
+        } else if (newProgress > 0) {
+          newStatus = "in-progress";
+        } else {
+          newStatus = "not-started";
+        }
+
+        return {
+          ...module,
+          content: updatedContent,
+          progress: newProgress,
+          status: newStatus,
+        };
+      });
+
+      return { trainingModules: updatedTrainingModules };
+    });
+  },
+
+  updateCandidateStatus: (candidateId, newStatus) => {
+    set((state) => {
+      const updatedCandidates = state.candidates.map((candidate) =>
+        candidate.id === candidateId
+          ? { ...candidate, status: newStatus }
+          : candidate,
+      );
+      return { candidates: updatedCandidates };
+    });
+  },
+
+  scheduleInterview: (candidateId, date) => {
+    set((state) => {
+      const updatedCandidates = state.candidates.map((candidate) =>
+        candidate.id === candidateId
+          ? { ...candidate, status: "interview-scheduled", interviewDate: date }
+          : candidate,
+      );
+      return { candidates: updatedCandidates };
     });
   },
 }));

@@ -1,18 +1,21 @@
 "use client";
 
 import React from "react";
-import { Award, Shield, Users } from "lucide-react";
+import { FileText, Shield, Users } from "lucide-react";
 import { clsx } from "clsx";
 import { useRole } from "../../../context/RoleContext";
 import { useGlobalStore } from "../../../store/useGlobalStore";
-import TrainingModule from "../../../components/training";
+import DocumentsModule from "../../../components/documents";
 
-export default function TrainingPage() {
+export default function DocumentsPage() {
   const { role } = useRole();
   const activeUserId = useGlobalStore((s) => s.activeUserId);
   const users = useGlobalStore((s) => s.users);
 
   const activeUser = users.find((u) => u.id === activeUserId) || users[0];
+  const isEmployee = role === "Employee";
+  const isManagerOrHR = role === "Manager" || role === "HR";
+  const isHROrAdmin = role === "HR" || role === "Admin";
 
   const greeting = (() => {
     const h = new Date().getHours();
@@ -32,7 +35,7 @@ export default function TrainingPage() {
           <p className="text-xs text-foreground-muted font-medium">
             {greeting}, {activeUser.name}
           </p>
-          <h1 className="text-2xl font-black text-foreground">Training & Learning</h1>
+          <h1 className="text-2xl font-black text-foreground">Documents</h1>
           <p className="text-xs text-foreground-muted mt-0.5">
             {new Date().toLocaleDateString("en-IN", {
               weekday: "long",
@@ -47,35 +50,35 @@ export default function TrainingPage() {
         <div
           className={clsx(
             "flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-semibold",
-            role === "Employee"
+            isEmployee
               ? "bg-primary/10 text-primary border-primary/25"
               : role === "Manager"
-              ? "bg-blue-500/10 text-blue-400 border-blue-500/25"
-              : "bg-orange-500/10 text-orange-400 border-orange-500/25"
+                ? "bg-blue-500/10 text-blue-400 border-blue-500/25"
+                : "bg-orange-500/10 text-orange-400 border-orange-500/25",
           )}
         >
-          {role === "Employee" ? (
-            <Award size={12} />
+          {isEmployee ? (
+            <FileText size={12} />
           ) : role === "Manager" ? (
             <Users size={12} />
           ) : (
             <Shield size={12} />
           )}
-          {role === "Employee" ? "My Learning" : roleLabel}
+          {isEmployee ? "My Documents" : roleLabel}
         </div>
       </div>
 
       {/* Admin fallback */}
       {role === "Admin" ? (
-        <div className="glass-card rounded-xl p-6 text-center border border-border/50">
+        <div className="glass-card rounded-2xl p-6 text-center border border-border/40">
           <p className="text-lg mb-2">⚙️</p>
           <p className="text-sm font-bold text-foreground">Admin View</p>
           <p className="text-xs text-foreground-muted mt-1">
-            Switch to Employee, Manager, or HR role to access training.
+            Switch to Employee, Manager, or HR role to access documents.
           </p>
         </div>
       ) : (
-        <TrainingModule />
+        <DocumentsModule />
       )}
     </div>
   );

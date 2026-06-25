@@ -3,6 +3,7 @@
 import { useRole } from '../../context/RoleContext';
 import BottomNav from '../layout/BottomNav';
 import RoleSwitcher from '../layout/RoleSwitcher';
+import HRCopilot from '../copilot/HRCopilot';
 import { ReactNode } from 'react';
 
 interface AppShellProps {
@@ -34,6 +35,9 @@ export default function AppShell({ children }: AppShellProps) {
         {/* Fixed bottom navigation */}
         <BottomNav />
       </div>
+
+      {/* HR Copilot Floating Widget */}
+      <HRCopilot />
     </div>
   );
 }
