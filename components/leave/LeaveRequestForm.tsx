@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 // ──────────────────────────────────────────────────────────────────────────────
 // WorkFlow HRMS — LeaveRequestForm
@@ -9,20 +9,31 @@
 // The `onClose` prop is kept so the parent can close the sheet.
 // ──────────────────────────────────────────────────────────────────────────────
 
-'use client';
-
-import { useState, useMemo } from 'react';
-import { X, CalendarDays, AlertCircle, CheckCircle2, ChevronDown, Loader2 } from 'lucide-react';
-import { clsx } from 'clsx';
-import { useGlobalStore, type LeaveType } from '../../store/useGlobalStore';
-import { mockLeaveBalances, calcWorkingDays } from '../../lib/mock-data/leave';
+import { useState, useMemo } from "react";
+import {
+  X,
+  CalendarDays,
+  AlertCircle,
+  CheckCircle2,
+  Loader2,
+} from "lucide-react";
+import { clsx } from "clsx";
+import { useGlobalStore, type LeaveType } from "../../store/useGlobalStore";
+import { calcWorkingDays } from "../../lib/mock-data/leave";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const LEAVE_TYPES: LeaveType[] = ['Casual', 'Sick', 'Privilege', 'Comp-off'];
+const LEAVE_TYPES: LeaveType[] = ["Casual", "Sick", "Privilege", "Comp-off"];
 
 function today() {
-  return new Date().toISOString().split('T')[0];
+  return new Date().toISOString().split("T")[0];
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -33,24 +44,47 @@ interface Props {
 
 export default function LeaveRequestForm({ onClose }: Props) {
   const addLeaveRequest = useGlobalStore((s) => s.addLeaveRequest);
+  const activeUserId = useGlobalStore((s) => s.activeUserId);
+  const leaveBalances = useGlobalStore((s) => s.leaveBalances);
 
-  const [leaveType,  setLeaveType]  = useState<LeaveType>('Casual');
-  const [startDate,  setStartDate]  = useState('');
-  const [endDate,    setEndDate]    = useState('');
-  const [reason,     setReason]     = useState('');
+  const [leaveType, setLeaveType] = useState<LeaveType>("Casual");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [reason, setReason] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [submitted,  setSubmitted]  = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   // ── Derived ──────────────────────────────────────────────────────────────────
-  const totalDays = useMemo(
-    () => (startDate && endDate ? calcWorkingDays(startDate, endDate) : 0),
-    [startDate, endDate]
-  );
+  const totalDays = useMemo(() => {
+    if (!startDate || !endDate) return 0;
 
-  const balance   = mockLeaveBalances.find((b) => b.leaveType === leaveType);
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    start.setHours(0, 0, 0, 0);
+    end.setHours(0, 0, 0, 0);
+
+    if (end >= start) {
+      const diffTime = Math.abs(end.getTime() - start.getTime());
+      const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1;
+      return diffDays;
+    } else {
+      return 0;
+    }
+  }, [startDate, endDate]);
+
+  const isEndDateBeforeStart =
+    startDate && endDate && new Date(endDate) < new Date(startDate);
+
+  const balance = leaveBalances.find(
+    (b) => b.userId === activeUserId && b.leaveType === leaveType,
+  );
   const available = balance?.available ?? 0;
-  const exceeds   = totalDays > 0 && totalDays > available;
-  const canSubmit = !exceeds && totalDays > 0 && reason.trim().length >= 10;
+  const exceeds = totalDays > 0 && totalDays > available;
+  const canSubmit =
+    !exceeds &&
+    !isEndDateBeforeStart &&
+    totalDays > 0 &&
+    reason.trim().length >= 10;
 
   // ── Submit ───────────────────────────────────────────────────────────────────
   function handleSubmit() {
@@ -66,15 +100,15 @@ export default function LeaveRequestForm({ onClose }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-end justify-center">
+    <div className="fixed inset-0 z-50 flex items-end justify-center">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-background/80 backdrop-blur-md" onClick={onClose} />
+      <div
+        className="absolute inset-0 bg-background/80 backdrop-blur-md"
+        onClick={onClose}
+      />
 
       {/* Sheet */}
-      <div
-        className="relative w-full max-w-mobile rounded-t-3xl border-t border-border/50 animate-slide-up shadow-xl flex flex-col max-h-[88vh] mb-[68px]"
-        style={{ background: 'var(--background-secondary)' }}
-      >
+      <div className="relative w-full max-w-mobile rounded-t-3xl border-t border-border/50 animate-slide-up shadow-2xl flex flex-col max-h-[88vh] mb-[68px] bg-background pointer-events-auto">
         {/* Handle */}
         <div className="flex-shrink-0 px-5 pt-4 pb-0">
           <div className="w-10 h-1 rounded-full bg-border/60 mx-auto mb-4" />
@@ -87,85 +121,108 @@ export default function LeaveRequestForm({ onClose }: Props) {
             <X size={15} />
           </button>
 
-          <h2 className="text-base font-black text-foreground mb-0.5">Apply for Leave</h2>
-          <p className="text-xs text-foreground-muted">Fill in the details below</p>
+          <h2 className="text-base font-black text-foreground mb-0.5">
+            Apply for Leave
+          </h2>
+          <p className="text-xs text-foreground-muted">
+            Fill in the details below
+          </p>
         </div>
 
         {/* ── Scrollable form body ── */}
-        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
-
+        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-6">
           {/* Leave Type */}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-foreground-muted uppercase tracking-wider">Leave Type</label>
-            <div className="relative">
-              <select
-                value={leaveType}
-                onChange={(e) => setLeaveType(e.target.value as LeaveType)}
-                className="w-full appearance-none rounded-xl border border-border/50 px-3.5 py-2.5 text-sm font-medium text-foreground pr-9 focus:outline-none focus:border-primary/60 transition-colors"
-                style={{ background: 'var(--background-tertiary)' }}
-              >
+            <label className="text-xs font-semibold text-foreground-muted uppercase tracking-wider">
+              Leave Type
+            </label>
+            <Select
+              value={leaveType}
+              onValueChange={(value) => setLeaveType(value as LeaveType)}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select leave type" />
+              </SelectTrigger>
+              <SelectContent>
                 {LEAVE_TYPES.map((t) => {
-                  const bal = mockLeaveBalances.find((b) => b.leaveType === t);
+                  const bal = leaveBalances.find(
+                    (b) => b.userId === activeUserId && b.leaveType === t,
+                  );
                   return (
-                    <option key={t} value={t}>
+                    <SelectItem key={t} value={t}>
                       {t} ({bal?.available ?? 0} days left)
-                    </option>
+                    </SelectItem>
                   );
                 })}
-              </select>
-              <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-muted pointer-events-none" />
-            </div>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Dates row */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-foreground-muted uppercase tracking-wider">Start Date</label>
+              <label className="text-xs font-semibold text-foreground-muted uppercase tracking-wider">
+                Start Date
+              </label>
               <input
                 type="date"
                 value={startDate}
                 min={today()}
                 onChange={(e) => {
                   setStartDate(e.target.value);
-                  if (endDate && e.target.value > endDate) setEndDate('');
+                  if (endDate && e.target.value > endDate) setEndDate("");
                 }}
                 className="w-full rounded-xl border border-border/50 px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary/60 transition-colors"
-                style={{ background: 'var(--background-tertiary)' }}
+                style={{ background: "var(--background-tertiary)" }}
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-foreground-muted uppercase tracking-wider">End Date</label>
+              <label className="text-xs font-semibold text-foreground-muted uppercase tracking-wider">
+                End Date
+              </label>
               <input
                 type="date"
                 value={endDate}
                 min={startDate || today()}
                 onChange={(e) => setEndDate(e.target.value)}
                 className="w-full rounded-xl border border-border/50 px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary/60 transition-colors"
-                style={{ background: 'var(--background-tertiary)' }}
+                style={{ background: "var(--background-tertiary)" }}
               />
             </div>
           </div>
 
           {/* Day count + validation */}
-          {totalDays > 0 && (
-            <div className={clsx(
-              'flex items-start gap-2.5 px-3.5 py-2.5 rounded-xl border text-xs transition-all duration-200',
-              exceeds
-                ? 'bg-destructive/10 border-destructive/30 text-destructive'
-                : 'bg-success/10 border-success/30 text-success'
-            )}>
-              {exceeds
-                ? <AlertCircle size={14} className="flex-shrink-0 mt-0.5" />
-                : <CalendarDays size={14} className="flex-shrink-0 mt-0.5" />
-              }
+          {(totalDays > 0 || isEndDateBeforeStart) && (
+            <div
+              className={clsx(
+                "flex items-start gap-2.5 px-3.5 py-2.5 rounded-xl border text-xs transition-all duration-200",
+                isEndDateBeforeStart || exceeds
+                  ? "bg-destructive/10 border-destructive/30 text-destructive"
+                  : "bg-success/10 border-success/30 text-success",
+              )}
+            >
+              {isEndDateBeforeStart || exceeds ? (
+                <AlertCircle size={14} className="flex-shrink-0 mt-0.5" />
+              ) : (
+                <CalendarDays size={14} className="flex-shrink-0 mt-0.5" />
+              )}
               <div>
-                <p className="font-semibold">
-                  {totalDays} working day{totalDays !== 1 ? 's' : ''}
-                </p>
-                {exceeds && (
-                  <p className="text-[10px] mt-0.5 opacity-80">
-                    Exceeds available balance of {available} day{available !== 1 ? 's' : ''}. Reduce the date range.
+                {isEndDateBeforeStart ? (
+                  <p className="font-semibold">
+                    End date cannot be before start date
                   </p>
+                ) : (
+                  <>
+                    <p className="font-semibold">
+                      {totalDays} day{totalDays !== 1 ? "s" : ""}
+                    </p>
+                    {exceeds && (
+                      <p className="text-[10px] mt-0.5 opacity-80">
+                        Exceeds available balance of {available} day
+                        {available !== 1 ? "s" : ""}. Reduce the date range.
+                      </p>
+                    )}
+                  </>
                 )}
               </div>
             </div>
@@ -174,7 +231,10 @@ export default function LeaveRequestForm({ onClose }: Props) {
           {/* Reason */}
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-foreground-muted uppercase tracking-wider">
-              Reason <span className="normal-case font-normal">(min. 10 characters)</span>
+              Reason{" "}
+              <span className="normal-case font-normal">
+                (min. 10 characters)
+              </span>
             </label>
             <textarea
               rows={3}
@@ -182,19 +242,24 @@ export default function LeaveRequestForm({ onClose }: Props) {
               placeholder="Briefly describe your reason for leave…"
               onChange={(e) => setReason(e.target.value)}
               className="w-full rounded-xl border border-border/50 px-3.5 py-2.5 text-sm text-foreground placeholder:text-foreground-muted/50 resize-none focus:outline-none focus:border-primary/60 transition-colors leading-relaxed"
-              style={{ background: 'var(--background-tertiary)' }}
+              style={{ background: "var(--background-tertiary)" }}
             />
-            <p className={clsx(
-              'text-right text-[10px] transition-colors',
-              reason.length < 10 ? 'text-foreground-muted' : 'text-success'
-            )}>
+            <p
+              className={clsx(
+                "text-right text-[10px] transition-colors",
+                reason.length < 10 ? "text-foreground-muted" : "text-success",
+              )}
+            >
               {reason.length} / 10+
             </p>
           </div>
         </div>
 
         {/* ── Footer ── */}
-        <div className="flex-shrink-0 px-5 pt-3 pb-6 border-t border-border/50 space-y-2" style={{ background: 'var(--background-secondary)' }}>
+        <div
+          className="flex-shrink-0 px-5 pt-3 pb-6 border-t border-border/50 space-y-2"
+          style={{ background: "var(--background-secondary)" }}
+        >
           {submitted ? (
             <div className="w-full py-3.5 rounded-2xl bg-success/15 border border-success/30 text-success font-bold text-sm flex items-center justify-center gap-2">
               <CheckCircle2 size={16} />
@@ -206,16 +271,18 @@ export default function LeaveRequestForm({ onClose }: Props) {
               disabled={!canSubmit || submitting}
               onClick={handleSubmit}
               className={clsx(
-                'w-full py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all',
+                "w-full py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all",
                 canSubmit && !submitting
-                  ? 'bg-gradient-to-r from-primary-dark to-primary text-white teal-glow hover:opacity-90 active:scale-95'
-                  : 'bg-muted/50 text-foreground-muted cursor-not-allowed'
+                  ? "bg-gradient-to-r from-primary-dark to-primary text-white teal-glow hover:opacity-90 active:scale-95"
+                  : "bg-muted/50 text-foreground-muted cursor-not-allowed",
               )}
             >
               {submitting ? (
-                <><Loader2 size={16} className="animate-spin" /> Submitting…</>
+                <>
+                  <Loader2 size={16} className="animate-spin" /> Submitting…
+                </>
               ) : (
-                'Submit Leave Request'
+                "Submit Leave Request"
               )}
             </button>
           )}
