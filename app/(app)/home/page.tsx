@@ -1,6 +1,7 @@
 "use client";
 
 import { useRole } from "../../../context/RoleContext";
+import { useGlobalStore } from "../../../store/useGlobalStore";
 import Link from "next/link";
 import {
   Bell,
@@ -256,10 +257,27 @@ function QuickStats({ role }: { role: string }) {
 }
 
 function OnboardingBanner() {
-  const progress = getOnboardingProgress(mockOnboardingEmployee);
-  const pending = mockOnboardingEmployee.tasks.filter(
-    (t) => t.assignee === "employee" && t.status !== "completed",
-  ).length;
+  const activeUserId = useGlobalStore((s) => s.activeUserId);
+  const onboardingProfiles = useGlobalStore((s) => s.onboardingProfiles);
+
+  const onboardingProfile = onboardingProfiles.find(
+    (profile) => profile.userId === activeUserId,
+  );
+
+  const totalTasks =
+    onboardingProfile?.tasks.length ??
+    mockOnboardingEmployee.tasks.filter((t) => t.assignee === "employee")
+      .length;
+  const completedTasks =
+    onboardingProfile?.tasks.filter((task) => task.isCompleted).length ??
+    mockOnboardingEmployee.tasks.filter(
+      (t) => t.assignee === "employee" && t.status === "completed",
+    ).length;
+  const progress =
+    totalTasks > 0
+      ? Math.round((completedTasks / totalTasks) * 100)
+      : getOnboardingProgress(mockOnboardingEmployee);
+  const pending = Math.max(totalTasks - completedTasks, 0);
 
   return (
     <Link href="/onboarding" id="onboarding-banner">

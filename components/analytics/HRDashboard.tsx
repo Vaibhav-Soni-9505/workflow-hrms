@@ -50,7 +50,7 @@ function formatChartDate(date: string) {
 export default function HRDashboard() {
   const activeUserId = useGlobalStore((s) => s.activeUserId);
   const users = useGlobalStore((s) => s.users);
-  const attendance = useGlobalStore((s) => s.attendance);
+  const attendanceRecords = useGlobalStore((s) => s.attendanceRecords);
   const leaveRequests = useGlobalStore((s) => s.leaveRequests);
   const trainingModules = useGlobalStore((s) => s.trainingModules);
 
@@ -77,8 +77,8 @@ export default function HRDashboard() {
   );
 
   const teamAttendance = useMemo(
-    () => attendance.filter((record) => visibleUserIds.has(record.userId)),
-    [attendance, visibleUserIds]
+    () => attendanceRecords.filter((record) => visibleUserIds.has(record.userId)),
+    [attendanceRecords, visibleUserIds]
   );
 
   const teamLeaveRequests = useMemo(

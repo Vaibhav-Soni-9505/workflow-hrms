@@ -3,6 +3,7 @@
 // ──────────────────────────────────────────────────────────────────────────────
 
 import { create } from "zustand";
+import { mockOnboardingEmployee } from "../lib/mock-data/onboarding";
 
 // ── Shared Types ──────────────────────────────────────────────────────────────
 
@@ -54,11 +55,16 @@ export interface AttendanceRecord {
   id: string;
   userId: string;
   date: string;
+  clockInTime: string;
+  clockOutTime?: string;
   status: AttendanceStatus;
-  totalHours: number;
-  productiveHours: number;
-  breakHours: number;
-  overtimeHours: number;
+  totalHours?: number;
+}
+
+export interface ActiveSession {
+  userId: string;
+  startTime: string;
+  isClockedIn: boolean;
 }
 
 export interface PayrollRecord {
@@ -248,6 +254,19 @@ export interface Candidate {
   rating: number;
   notes: string;
   interviewDate?: string;
+}
+
+export interface OnboardingTask {
+  id: string;
+  title: string;
+  isCompleted: boolean;
+}
+
+export interface OnboardingProfile {
+  userId: string;
+  currentStep: number;
+  tasks: OnboardingTask[];
+  isCompleted: boolean;
 }
 
 // ── Seed Data ─────────────────────────────────────────────────────────────────
@@ -473,201 +492,196 @@ const SEED_ATTENDANCE_RECORDS: AttendanceRecord[] = [
     id: "att-1-20260622",
     userId: "1",
     date: "2026-06-22",
+    clockInTime: "2026-06-22T09:02:00.000Z",
+    clockOutTime: "2026-06-22T17:56:00.000Z",
     status: "Present",
     totalHours: 8.9,
-    productiveHours: 7.4,
-    breakHours: 0.9,
-    overtimeHours: 0.6,
   },
   {
     id: "att-1-20260623",
     userId: "1",
     date: "2026-06-23",
+    clockInTime: "2026-06-23T09:45:00.000Z",
+    clockOutTime: "2026-06-23T17:33:00.000Z",
     status: "Late",
     totalHours: 7.8,
-    productiveHours: 6.5,
-    breakHours: 0.8,
-    overtimeHours: 0,
   },
   {
     id: "att-1-20260624",
     userId: "1",
     date: "2026-06-24",
+    clockInTime: "2026-06-24T09:00:00.000Z",
+    clockOutTime: "2026-06-24T13:12:00.000Z",
     status: "Half-day",
     totalHours: 4.2,
-    productiveHours: 3.4,
-    breakHours: 0.4,
-    overtimeHours: 0,
   },
   {
     id: "att-1-20260625",
     userId: "1",
     date: "2026-06-25",
+    clockInTime: "",
     status: "On-leave",
     totalHours: 0,
-    productiveHours: 0,
-    breakHours: 0,
-    overtimeHours: 0,
   },
   {
     id: "att-1-20260626",
     userId: "1",
     date: "2026-06-26",
+    clockInTime: "2026-06-26T09:03:00.000Z",
+    clockOutTime: "2026-06-26T17:27:00.000Z",
     status: "Present",
     totalHours: 8.4,
-    productiveHours: 7,
-    breakHours: 0.9,
-    overtimeHours: 0.5,
   },
   {
     id: "att-2-20260622",
     userId: "2",
     date: "2026-06-22",
+    clockInTime: "2026-06-22T08:55:00.000Z",
+    clockOutTime: "2026-06-22T18:01:00.000Z",
     status: "Present",
     totalHours: 9.1,
-    productiveHours: 7.6,
-    breakHours: 0.9,
-    overtimeHours: 0.6,
   },
   {
     id: "att-2-20260623",
     userId: "2",
     date: "2026-06-23",
+    clockInTime: "2026-06-23T09:00:00.000Z",
+    clockOutTime: "2026-06-23T17:42:00.000Z",
     status: "Present",
     totalHours: 8.7,
-    productiveHours: 7.1,
-    breakHours: 0.8,
-    overtimeHours: 0.8,
   },
   {
     id: "att-2-20260624",
     userId: "2",
     date: "2026-06-24",
+    clockInTime: "2026-06-24T09:32:00.000Z",
+    clockOutTime: "2026-06-24T17:02:00.000Z",
     status: "Late",
     totalHours: 7.5,
-    productiveHours: 6.2,
-    breakHours: 0.8,
-    overtimeHours: 0,
   },
   {
     id: "att-2-20260625",
     userId: "2",
     date: "2026-06-25",
+    clockInTime: "2026-06-25T08:58:00.000Z",
+    clockOutTime: "2026-06-25T17:46:00.000Z",
     status: "Present",
     totalHours: 8.8,
-    productiveHours: 7.2,
-    breakHours: 0.9,
-    overtimeHours: 0.7,
   },
   {
     id: "att-2-20260626",
     userId: "2",
     date: "2026-06-26",
+    clockInTime: "2026-06-26T09:04:00.000Z",
+    clockOutTime: "2026-06-26T17:40:00.000Z",
     status: "Present",
     totalHours: 8.6,
-    productiveHours: 7.1,
-    breakHours: 0.9,
-    overtimeHours: 0.6,
   },
   {
     id: "att-3-20260622",
     userId: "3",
     date: "2026-06-22",
+    clockInTime: "2026-06-22T09:08:00.000Z",
+    clockOutTime: "2026-06-22T17:38:00.000Z",
     status: "Present",
     totalHours: 8.5,
-    productiveHours: 7.1,
-    breakHours: 0.8,
-    overtimeHours: 0.6,
   },
   {
     id: "att-3-20260623",
     userId: "3",
     date: "2026-06-23",
+    clockInTime: "2026-06-23T09:48:00.000Z",
+    clockOutTime: "2026-06-23T17:00:00.000Z",
     status: "Late",
     totalHours: 7.2,
-    productiveHours: 5.9,
-    breakHours: 0.7,
-    overtimeHours: 0,
   },
   {
     id: "att-3-20260624",
     userId: "3",
     date: "2026-06-24",
+    clockInTime: "2026-06-24T09:01:00.000Z",
+    clockOutTime: "2026-06-24T17:55:00.000Z",
     status: "Present",
     totalHours: 8.9,
-    productiveHours: 7.4,
-    breakHours: 0.9,
-    overtimeHours: 0.6,
   },
   {
     id: "att-3-20260625",
     userId: "3",
     date: "2026-06-25",
+    clockInTime: "",
     status: "On-leave",
     totalHours: 0,
-    productiveHours: 0,
-    breakHours: 0,
-    overtimeHours: 0,
   },
   {
     id: "att-3-20260626",
     userId: "3",
     date: "2026-06-26",
+    clockInTime: "2026-06-26T09:12:00.000Z",
+    clockOutTime: "2026-06-26T17:18:00.000Z",
     status: "Present",
     totalHours: 8.1,
-    productiveHours: 6.8,
-    breakHours: 0.8,
-    overtimeHours: 0.5,
   },
   {
     id: "att-4-20260622",
     userId: "4",
     date: "2026-06-22",
+    clockInTime: "2026-06-22T09:04:00.000Z",
+    clockOutTime: "2026-06-22T17:16:00.000Z",
     status: "Present",
     totalHours: 8.2,
-    productiveHours: 6.9,
-    breakHours: 0.7,
-    overtimeHours: 0.6,
   },
   {
     id: "att-4-20260623",
     userId: "4",
     date: "2026-06-23",
+    clockInTime: "2026-06-23T09:01:00.000Z",
+    clockOutTime: "2026-06-23T17:25:00.000Z",
     status: "Present",
     totalHours: 8.4,
-    productiveHours: 7,
-    breakHours: 0.8,
-    overtimeHours: 0.6,
   },
   {
     id: "att-4-20260624",
     userId: "4",
     date: "2026-06-24",
+    clockInTime: "2026-06-24T08:58:00.000Z",
+    clockOutTime: "2026-06-24T17:34:00.000Z",
     status: "Present",
     totalHours: 8.6,
-    productiveHours: 7.2,
-    breakHours: 0.8,
-    overtimeHours: 0.6,
   },
   {
     id: "att-4-20260625",
     userId: "4",
     date: "2026-06-25",
+    clockInTime: "2026-06-25T09:03:00.000Z",
+    clockOutTime: "2026-06-25T13:03:00.000Z",
     status: "Half-day",
     totalHours: 4,
-    productiveHours: 3.2,
-    breakHours: 0.4,
-    overtimeHours: 0,
   },
   {
     id: "att-4-20260626",
     userId: "4",
     date: "2026-06-26",
+    clockInTime: "2026-06-26T09:06:00.000Z",
+    clockOutTime: "2026-06-26T17:24:00.000Z",
     status: "Present",
     totalHours: 8.3,
-    productiveHours: 6.9,
-    breakHours: 0.8,
-    overtimeHours: 0.6,
+  },
+];
+
+const SEED_ACTIVE_SESSIONS: ActiveSession[] = [];
+
+const SEED_ONBOARDING_PROFILES: OnboardingProfile[] = [
+  {
+    userId: "1",
+    currentStep: 0,
+    tasks: mockOnboardingEmployee.tasks
+      .filter((task) => task.assignee === "employee")
+      .map((task) => ({
+        id: task.id,
+        title: task.title,
+        isCompleted: task.status === "completed",
+      })),
+    isCompleted: false,
   },
 ];
 
@@ -1054,13 +1068,15 @@ interface GlobalState {
   // ── Data ──────────────────────────────────────────────────────────────────
   users: User[];
   activeUserId: string;
-  attendance: AttendanceRecord[];
+  attendanceRecords: AttendanceRecord[];
+  activeSessions: ActiveSession[];
   leaveRequests: LeaveRequest[];
   leaveBalances: LeaveBalance[];
   payrollRecords: PayrollRecord[];
   taxDocuments: TaxDocument[];
   documents: UserDocument[];
   reimbursements: Reimbursement[];
+  onboardingProfiles: OnboardingProfile[];
   goals: Goal[];
   performanceReviews: PerformanceReview[];
   trainingModules: TrainingModule[];
@@ -1072,6 +1088,10 @@ interface GlobalState {
 
   // ── Actions ───────────────────────────────────────────────────────────────
   setActiveUser: (userId: string) => void;
+  clockIn: (userId: string) => void;
+  clockOut: (userId: string) => void;
+  updateOnboardingStep: (userId: string, stepIndex: number) => void;
+  toggleOnboardingTask: (userId: string, taskId: string) => void;
 
   /**
    * Submit a new leave request for the currently active user.
@@ -1144,13 +1164,15 @@ export const useGlobalStore = create<GlobalState>()((set, get) => ({
   // ── Initial State ──────────────────────────────────────────────────────────
   users: SEED_USERS,
   activeUserId: "1",
-  attendance: SEED_ATTENDANCE_RECORDS,
+  attendanceRecords: SEED_ATTENDANCE_RECORDS,
+  activeSessions: SEED_ACTIVE_SESSIONS,
   leaveRequests: SEED_LEAVE_REQUESTS,
   leaveBalances: SEED_LEAVE_BALANCES,
   payrollRecords: SEED_PAYROLL_RECORDS,
   taxDocuments: SEED_TAX_DOCUMENTS,
   documents: SEED_USER_DOCUMENTS,
   reimbursements: SEED_REIMBURSEMENTS,
+  onboardingProfiles: SEED_ONBOARDING_PROFILES,
   goals: SEED_GOALS,
   performanceReviews: SEED_PERFORMANCE_REVIEWS,
   trainingModules: SEED_TRAINING_MODULES,
@@ -1166,6 +1188,118 @@ export const useGlobalStore = create<GlobalState>()((set, get) => ({
   // ── Actions ───────────────────────────────────────────────────────────────
 
   setActiveUser: (userId) => set({ activeUserId: userId }),
+
+  clockIn: (userId) => {
+    const now = new Date().toISOString();
+
+    set((state) => {
+      const existingSession = state.activeSessions.find(
+        (session) => session.userId === userId && session.isClockedIn,
+      );
+
+      if (existingSession) {
+        return state;
+      }
+
+      return {
+        activeSessions: [
+          ...state.activeSessions.filter(
+            (session) => session.userId !== userId,
+          ),
+          {
+            userId,
+            startTime: now,
+            isClockedIn: true,
+          },
+        ],
+      };
+    });
+  },
+
+  clockOut: (userId) => {
+    set((state) => {
+      const activeSession = state.activeSessions.find(
+        (session) => session.userId === userId && session.isClockedIn,
+      );
+
+      if (!activeSession) {
+        return state;
+      }
+
+      const endTime = new Date();
+      const startTime = new Date(activeSession.startTime);
+      const totalHours = Number(
+        ((endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60)).toFixed(
+          2,
+        ),
+      );
+      const recordDate = activeSession.startTime.split("T")[0];
+
+      const newRecord: AttendanceRecord = {
+        id: `att-${userId}-${Date.now()}`,
+        userId,
+        date: recordDate,
+        clockInTime: activeSession.startTime,
+        clockOutTime: endTime.toISOString(),
+        status: totalHours >= 6 ? "Present" : "Half-day",
+        totalHours,
+      };
+
+      const hasTodayRecord = state.attendanceRecords.some(
+        (record) => record.userId === userId && record.date === recordDate,
+      );
+
+      return {
+        attendanceRecords: hasTodayRecord
+          ? state.attendanceRecords.map((record) =>
+              record.userId === userId && record.date === recordDate
+                ? newRecord
+                : record,
+            )
+          : [newRecord, ...state.attendanceRecords],
+        activeSessions: state.activeSessions.filter(
+          (session) => session.userId !== userId,
+        ),
+      };
+    });
+  },
+
+  updateOnboardingStep: (userId, stepIndex) => {
+    set((state) => ({
+      onboardingProfiles: state.onboardingProfiles.map((profile) =>
+        profile.userId === userId
+          ? {
+              ...profile,
+              currentStep: stepIndex,
+            }
+          : profile,
+      ),
+    }));
+  },
+
+  toggleOnboardingTask: (userId, taskId) => {
+    set((state) => {
+      const updatedProfiles = state.onboardingProfiles.map((profile) => {
+        if (profile.userId !== userId) return profile;
+
+        const updatedTasks = profile.tasks.map((task) =>
+          task.id === taskId
+            ? { ...task, isCompleted: !task.isCompleted }
+            : task,
+        );
+
+        return {
+          ...profile,
+          tasks: updatedTasks,
+          isCompleted:
+            updatedTasks.length > 0 &&
+            updatedTasks.every((task) => task.isCompleted),
+        };
+      });
+
+      return { onboardingProfiles: updatedProfiles };
+    });
+  },
 
   addLeaveRequest: (partial) => {
     const { activeUserId } = get();

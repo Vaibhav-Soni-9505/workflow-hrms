@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   mockOnboardingEmployee,
   getOnboardingProgress,
 } from '../../lib/mock-data/onboarding';
 import type { OnboardingEmployee } from '../../types/onboarding';
+import { useGlobalStore } from '../../store/useGlobalStore';
 import OnboardingProgress from './OnboardingProgress';
 import TaskChecklist from './TaskChecklist';
 import WelcomeMessages from './WelcomeMessages';
@@ -36,23 +37,53 @@ const TABS: { id: Tab; label: string; emoji: string }[] = [
 
 export default function OnboardingDashboard() {
   const router = useRouter();
-  const [employee, setEmployee] = useState<OnboardingEmployee>(mockOnboardingEmployee);
-  const [activeTab, setActiveTab] = useState<Tab>('tasks');
-  const [showCompleteModal, setShowCompleteModal] = useState(false);
+  const activeUserId = useGlobalStore((s) => s.activeUserId);
+  const onboardingProfiles = useGlobalStore((s) => s.onboardingProfiles);
+  const updateOnboardingStep = useGlobalStore((s) => s.updateOnboardingStep);
+  const toggleOnboardingTask = useGlobalStore((s) => s.toggleOnboardingTask);
+
+  const onboardingProfile =
+    onboardingProfiles.find((profile) => profile.userId === activeUserId) ?? null;
+
+  const completionDate = new Date().toISOString().split('T')[0];
+  const profileTaskMap = useMemo(
+    () => new Map(onboardingProfile?.tasks.map((task) => [task.id, task.isCompleted]) ?? []),
+    [onboardingProfile]
+  );
+
+  const employee = useMemo<OnboardingEmployee>(
+    () => ({
+      ...mockOnboardingEmployee,
+      onboardingCompleted: onboardingProfile?.isCompleted ?? mockOnboardingEmployee.onboardingCompleted,
+      tasks: mockOnboardingEmployee.tasks.map((task) => {
+        const isCompleted = profileTaskMap.get(task.id);
+
+        if (typeof isCompleted !== 'boolean') {
+          return task;
+        }
+
+        return {
+          ...task,
+          status: isCompleted
+            ? 'completed'
+            : task.status === 'completed'
+            ? 'pending'
+            : task.status,
+          completedDate: isCompleted ? task.completedDate ?? completionDate : undefined,
+        };
+      }),
+    }),
+    [completionDate, onboardingProfile?.isCompleted, profileTaskMap]
+  );
+
+  const activeTab = TABS[Math.min(onboardingProfile?.currentStep ?? 0, TABS.length - 1)]?.id ?? 'tasks';
 
   const progress = getOnboardingProgress(employee);
 
   // ON-02: Mark task as complete
   const handleTaskComplete = useCallback((taskId: string) => {
-    setEmployee((prev) => ({
-      ...prev,
-      tasks: prev.tasks.map((t) =>
-        t.id === taskId
-          ? { ...t, status: 'completed', completedDate: new Date().toISOString().split('T')[0] }
-          : t
-      ),
-    }));
-  }, []);
+    toggleOnboardingTask(activeUserId, taskId);
+  }, [activeUserId, toggleOnboardingTask]);
 
   // ON-06: Complete onboarding
   const handleCompleteOnboarding = () => {
@@ -139,7 +170,7 @@ export default function OnboardingDashboard() {
             <button
               key={tab.id}
               id={`onboarding-tab-${tab.id}`}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => updateOnboardingStep(activeUserId, TABS.findIndex((item) => item.id === tab.id))}
               className={clsx(
                 'flex-shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all duration-200 whitespace-nowrap',
                 activeTab === tab.id

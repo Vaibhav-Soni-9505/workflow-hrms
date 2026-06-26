@@ -49,21 +49,21 @@ function formatChartDate(date: string) {
 
 export default function EmployeeAnalytics() {
   const activeUserId = useGlobalStore((s) => s.activeUserId);
-  const attendance = useGlobalStore((s) => s.attendance);
+  const attendanceRecords = useGlobalStore((s) => s.attendanceRecords);
   const leaveRequests = useGlobalStore((s) => s.leaveRequests);
   const leaveBalances = useGlobalStore((s) => s.leaveBalances);
 
   const myAttendance = useMemo(
     () =>
-      attendance
+      attendanceRecords
         .filter((record) => record.userId === activeUserId)
         .sort((a, b) => a.date.localeCompare(b.date)),
-    [attendance, activeUserId]
+    [attendanceRecords, activeUserId],
   );
 
   const myLeaveRequests = useMemo(
     () => leaveRequests.filter((request) => request.userId === activeUserId),
-    [leaveRequests, activeUserId]
+    [leaveRequests, activeUserId],
   );
 
   const leaveBalance = useMemo(
@@ -71,14 +71,14 @@ export default function EmployeeAnalytics() {
       leaveBalances
         .filter((balance) => balance.userId === activeUserId)
         .reduce((sum, balance) => sum + balance.available, 0),
-    [leaveBalances, activeUserId]
+    [leaveBalances, activeUserId],
   );
 
   const totalDaysPresent = myAttendance.filter(
     (record) =>
       record.status === "Present" ||
       record.status === "Late" ||
-      record.status === "Half-day"
+      record.status === "Half-day",
   ).length;
 
   const totalLeaveTaken = myLeaveRequests
@@ -101,7 +101,7 @@ export default function EmployeeAnalytics() {
     myAttendance.reduce<Record<string, number>>((acc, record) => {
       acc[record.status] = (acc[record.status] ?? 0) + 1;
       return acc;
-    }, {})
+    }, {}),
   ).map(([name, value]) => ({ name, value }));
 
   return (
@@ -213,7 +213,9 @@ export default function EmployeeAnalytics() {
                 <div className="mb-1 flex items-center gap-2">
                   <span
                     className="h-2.5 w-2.5 rounded-full"
-                    style={{ backgroundColor: PIE_COLORS[index % PIE_COLORS.length] }}
+                    style={{
+                      backgroundColor: PIE_COLORS[index % PIE_COLORS.length],
+                    }}
                   />
                   <p className="text-xs font-semibold text-foreground">
                     {item.name}

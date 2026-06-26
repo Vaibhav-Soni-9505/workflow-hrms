@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
 import { useRole } from '../../../context/RoleContext';
+import { useGlobalStore } from '../../../store/useGlobalStore';
 import AttendanceWidget from '../../../components/attendance/AttendanceWidget';
 import ShiftCalendar from '../../../components/attendance/ShiftCalendar';
 import TeamAttendanceTable from '../../../components/attendance/TeamAttendanceTable';
@@ -10,19 +10,28 @@ import { clsx } from 'clsx';
 
 export default function AttendancePage() {
   const { role } = useRole();
+  const activeUserId = useGlobalStore((s) => s.activeUserId);
+  const activeSessions = useGlobalStore((s) => s.activeSessions);
+  const attendanceRecords = useGlobalStore((s) => s.attendanceRecords);
+  const clockIn = useGlobalStore((s) => s.clockIn);
+  const clockOut = useGlobalStore((s) => s.clockOut);
 
-  // ── Shared session state ─────────────────────────────────────────────────────
-  // Owned here so AttendanceWidget and ShiftCalendar stay in sync
-  const [checkInTime,  setCheckInTime]  = useState<Date | null>(null);
-  const [clockOutTime, setClockOutTime] = useState<Date | null>(null);
-
-  function handleClockIn(time: Date) {
-    setCheckInTime(time);
-    setClockOutTime(null); // clear previous clock-out on a new session
-  }
-  function handleClockOut(time: Date) {
-    setClockOutTime(time);
-  }
+  const today = new Date().toISOString().split('T')[0];
+  const activeSession = activeSessions.find(
+    (session) => session.userId === activeUserId && session.isClockedIn
+  );
+  const todayRecord = attendanceRecords.find(
+    (record) => record.userId === activeUserId && record.date === today
+  );
+  const checkInTime = activeSession?.startTime
+    ? new Date(activeSession.startTime)
+    : todayRecord?.clockInTime
+    ? new Date(todayRecord.clockInTime)
+    : null;
+  const clockOutTime =
+    todayRecord?.clockOutTime && !activeSession
+      ? new Date(todayRecord.clockOutTime)
+      : null;
 
   // ── Derived ──────────────────────────────────────────────────────────────────
   const isEmployeeView  = role === 'Employee';
@@ -77,10 +86,12 @@ export default function AttendancePage() {
         <>
           {/* AT-01 / AT-02 / AT-04: Clock widget + today summary */}
           <AttendanceWidget
+            isClockedIn={Boolean(activeSession?.isClockedIn)}
             checkInTime={checkInTime}
             clockOutTime={clockOutTime}
-            onClockIn={handleClockIn}
-            onClockOut={handleClockOut}
+            todayRecord={todayRecord ?? null}
+            onClockIn={() => clockIn(activeUserId)}
+            onClockOut={() => clockOut(activeUserId)}
           />
 
           {/* Divider */}
